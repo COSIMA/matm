@@ -271,6 +271,8 @@ subroutine recv_grid_from_ice()
   real(kind=dbl_kind), dimension(:), allocatable :: buf_real
   integer(kind=int_kind) :: stat(MPI_STATUS_SIZE)
 
+  print*, 'MATM my_task: ', my_task
+
   ! Receive dimensions of the ice grid that we're coupled to.
   if (my_task == 0) then
 
@@ -297,6 +299,8 @@ subroutine recv_grid_from_ice()
     ice_mask(:, :) = reshape(buf_real, (/ nx_global_ice, ny_global_ice /))
     deallocate(buf_real)
   endif
+
+  print*, 'MATM finished recv ice grid'
 
 end subroutine recv_grid_from_ice
 
@@ -390,7 +394,7 @@ subroutine into_cpl(istep1)
 
   ! Block until we receive from ice. This prevents the atm from sending
   ! continuously.
-  if (my_commice_task == 0) then
+  if (my_task == 0) then
     tag = MPI_ANY_TAG
     call MPI_recv(buf, 1, MPI_INTEGER, 0, tag, 1,  stat, ierror)
   endif
