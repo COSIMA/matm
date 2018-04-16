@@ -269,15 +269,12 @@ subroutine recv_grid_from_ice()
   integer :: tag
   integer(kind=int_kind), dimension(2) :: buf_int
   real(kind=dbl_kind), dimension(:), allocatable :: buf_real
-  integer(kind=int_kind) :: stat(MPI_STATUS_SIZE)
-
-  print*, 'MATM my_task: ', my_task
+  integer(kind=int_kind) :: stat(MPI_STATUS_SIZE), ierror
 
   ! Receive dimensions of the ice grid that we're coupled to.
   if (my_task == 0) then
-
     tag = MPI_ANY_TAG
-    call MPI_recv(buf_int, 2, MPI_INTEGER, 0, tag, 1,  stat, ierror)
+    call MPI_recv(buf_int, 2, MPI_INTEGER, 1, tag, MPI_COMM_WORLD,  stat, ierror)
     nx_global_ice = buf_int(1)
     ny_global_ice = buf_int(2)
 
@@ -287,20 +284,18 @@ subroutine recv_grid_from_ice()
     allocate(buf_real(nx_global_ice*ny_global_ice))
 
     call MPI_recv(buf_real, nx_global_ice*ny_global_ice, &
-                  MPI_DOUBLE, 0, tag, 1,  stat, ierror)
+                  MPI_DOUBLE, 1, tag, MPI_COMM_WORLD,  stat, ierror)
     ice_lats(:, :) = reshape(buf_real, (/ nx_global_ice, ny_global_ice /))
 
     call MPI_recv(buf_real, nx_global_ice*ny_global_ice, &
-                  MPI_DOUBLE, 0, tag, 1,  stat, ierror)
+                  MPI_DOUBLE, 1, tag, MPI_COMM_WORLD,  stat, ierror)
     ice_lons(:, :) = reshape(buf_real, (/ nx_global_ice, ny_global_ice /))
 
     call MPI_recv(buf_real, nx_global_ice*ny_global_ice, &
-                  MPI_DOUBLE, 0, tag, 1,  stat, ierror)
+                  MPI_DOUBLE, 1, tag, MPI_COMM_WORLD,  stat, ierror)
     ice_mask(:, :) = reshape(buf_real, (/ nx_global_ice, ny_global_ice /))
     deallocate(buf_real)
   endif
-
-  print*, 'MATM finished recv ice grid'
 
 end subroutine recv_grid_from_ice
 
@@ -396,7 +391,7 @@ subroutine into_cpl(istep1)
   ! continuously.
   if (my_task == 0) then
     tag = MPI_ANY_TAG
-    call MPI_recv(buf, 1, MPI_INTEGER, 0, tag, 1,  stat, ierror)
+    call MPI_recv(buf, 1, MPI_INTEGER, 1, tag, 0,  stat, ierror)
   endif
 
   ! This is pointless since we're required to be on only one PE.
