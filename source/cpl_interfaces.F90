@@ -100,8 +100,8 @@ contains
   endif
 
   ! Get an intercommunicator with the ice.
-  call prism_get_intercomm(il_commice, 'cicexx', ierror)
-  call MPI_Comm_Rank(il_commice, my_commice_task, ierror)
+  !call prism_get_intercomm(il_commice, 'cicexx', ierror)
+  !call MPI_Comm_Rank(il_commice, my_commice_task, ierror)
 
   end subroutine prism_init
 
@@ -275,7 +275,7 @@ subroutine recv_grid_from_ice()
   if (my_task == 0) then
 
     tag = MPI_ANY_TAG
-    call MPI_recv(buf_int, 2, MPI_INTEGER, 0, tag, il_commice,  stat, ierror)
+    call MPI_recv(buf_int, 2, MPI_INTEGER, 0, tag, 1,  stat, ierror)
     nx_global_ice = buf_int(1)
     ny_global_ice = buf_int(2)
 
@@ -285,15 +285,15 @@ subroutine recv_grid_from_ice()
     allocate(buf_real(nx_global_ice*ny_global_ice))
 
     call MPI_recv(buf_real, nx_global_ice*ny_global_ice, &
-                  MPI_DOUBLE, 0, tag, il_commice,  stat, ierror)
+                  MPI_DOUBLE, 0, tag, 1,  stat, ierror)
     ice_lats(:, :) = reshape(buf_real, (/ nx_global_ice, ny_global_ice /))
 
     call MPI_recv(buf_real, nx_global_ice*ny_global_ice, &
-                  MPI_DOUBLE, 0, tag, il_commice,  stat, ierror)
+                  MPI_DOUBLE, 0, tag, 1,  stat, ierror)
     ice_lons(:, :) = reshape(buf_real, (/ nx_global_ice, ny_global_ice /))
 
     call MPI_recv(buf_real, nx_global_ice*ny_global_ice, &
-                  MPI_DOUBLE, 0, tag, il_commice,  stat, ierror)
+                  MPI_DOUBLE, 0, tag, 1,  stat, ierror)
     ice_mask(:, :) = reshape(buf_real, (/ nx_global_ice, ny_global_ice /))
     deallocate(buf_real)
   endif
@@ -392,7 +392,7 @@ subroutine into_cpl(istep1)
   ! continuously.
   if (my_commice_task == 0) then
     tag = MPI_ANY_TAG
-    call MPI_recv(buf, 1, MPI_INTEGER, 0, tag, il_commice,  stat, ierror)
+    call MPI_recv(buf, 1, MPI_INTEGER, 0, tag, 1,  stat, ierror)
   endif
 
   ! This is pointless since we're required to be on only one PE.
